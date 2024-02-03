@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "DOM"
+    ],
+    "target": "es5",
+    "jsx": "preserve",
+    "module": "esnext",
+    "esModuleInterop": true,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": false,
+    // Ensure that Babel can safely transpile files in the TypeScript project
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types"
+    ],
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "*"
+      ]
+    },
+    "allowJs": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "incremental": true
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
+}
