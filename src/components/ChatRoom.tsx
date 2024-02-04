@@ -5,6 +5,7 @@ import useChatBot from "@/hooks/useChatBot";
 import useLocalData from "@/hooks/useLocalData";
 
 import { Avatar, AvatarImage } from "./ui/Avatar";
+import clsx from "clsx";
 
 const ChatRoom = () => {
   const ref = useRef();
@@ -18,6 +19,7 @@ const ChatRoom = () => {
           <PersonIcon />
         </Avatar>
       ),
+      classLabel: 'bg-black text-white',
       label: 'You'
     },
     bot: {
@@ -26,6 +28,7 @@ const ChatRoom = () => {
           <AvatarImage src="/images/logo.png" />
         </Avatar>
       ),
+      classLabel: '',
       label: 'Bot Simple Chat'
     }
   };
@@ -45,10 +48,12 @@ const ChatRoom = () => {
         });
 
 
-        let chatRoomEl = document.querySelector('.chat-room');
 
-        chatRoomEl.scrollTop = chatRoomEl.scrollHeight;
         setPrevTotalData(conversationData.length);
+        setTimeout(() => {
+          let chatRoomEl = document.querySelector('.chat-room');
+          chatRoomEl.scrollTop = chatRoomEl.scrollHeight;
+        }, 500);
 
         clearInterval(interval);
       }, 500);
@@ -63,7 +68,7 @@ const ChatRoom = () => {
           <div className="flex flex-col mt-3" key={`${record.type}-${index}`}>
             <div className="flex items-center">
               {type[record.type].avatar}
-              <span className="ml-2">{type[record.type].label}</span>
+              <span className={clsx([`ml-2 border rounded text-sm px-2`, type[record.type].classLabel ])}>{type[record.type].label}</span>
             </div>
             <p className="pl-[37px] whitespace-pre">
               {record.message}

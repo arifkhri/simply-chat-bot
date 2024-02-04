@@ -52,6 +52,14 @@ const PortfolioPage = () => {
     }
   }
 
+  const onClearChat = () => {
+    dispatch({
+      type: 'update',
+      name: 'conversationData',
+      value: []
+    });
+  }
+
   useEffect(() => {
     if (showConfigModal) {
       setDialogConfig(true);
@@ -72,9 +80,15 @@ const PortfolioPage = () => {
             <img src="/images/logo.png" alt="simple-chat-logo" className="w-20" />
             <h3 className="text-base ps-2">Simple Chat.</h3>
           </div>
-          <Button className="border-gray-800 border-2" variant="secondary" onClick={() => navigate('/config')}>
-            Konfigurasi Pesan Bot
-          </Button>
+          <div className="flex">
+            <Button className="border-gray-800 mr-2 border-2 p-1 text-sm" size="sm" onClick={() => navigate('/config')}>
+              Konfigurasi Pesan Bot
+            </Button>
+
+            <Button className="border-gray-800 border-2 p-1 text-sm" size="sm" variant="secondary" onClick={() => onClearChat()}>
+              Clear Chat
+            </Button>
+          </div>
         </div>
 
         {/* room chat */}
