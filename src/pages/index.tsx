@@ -1,44 +1,62 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import Head from "next/head";
-// import { useRouter } from 'next/navigation'
-import { useState } from "react";
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from "react";
 
 import ChatRoom from "@/components/ChatRoom";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 
 import { siteConfig } from "@/constant/config";
-import { chatStore } from "@/lib/zustand/stores/chatStore";
+import useLocalData from '@/hooks/useLocalData';
 
+import { IConversationData } from '../../global';
 
 const PortfolioPage = () => {
-  const { messageData: chatData, set: setChatData } = chatStore();
-  // const { getReplyData } = botStore();
+  const { store: { showConfigModal, conversationData }, dispatch } = useLocalData();
+  // const { getReplyData } = useChatBot();
   const [messageValue, setMessageValue] = useState('');
+  const [dialogConfig, setDialogConfig] = useState(false);
 
-  // const { push: navigate } = useRouter();
+  const { push: navigate } = useRouter();
 
-  // const redirectToConfig = () => {
-  //   navigate('config');
-  // }
+  const redirectToConfig = () => {
+    navigate('config');
+  }
 
   const sendMessage = (e) => {
+    const newConversation = conversationData;
 
-    if(e.key === 'Enter' || e.key === 'Click') {
-      const messageData = {
-        type: 'you',
+    if (e.key === 'Enter' || e.key === 'Click') {
+      const messageData: IConversationData = {
+        type: 'user',
         message: messageValue
       };
-      setChatData(messageData);
-      setMessageValue('');
 
-      setTimeout(() => {
-        console.log('🚀 ~ chatData:', chatData);
-        // const replyData = getReplyData(chatData);
-        // setChatData(replyData);
-      }, 500);
+      newConversation.push(messageData);
+      dispatch({
+        type: 'update',
+        name: 'conversationData',
+        value: newConversation
+      });
+
+      setMessageValue('');
     }
   }
+
+  useEffect(() => {
+    if (showConfigModal) {
+      setDialogConfig(true);
+    }
+  }, [showConfigModal])
 
   return (
     <>
@@ -48,43 +66,46 @@ const PortfolioPage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="h-full relative pt-6 px-2 pb-16 lg:grid lg:max-w-7xl lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:pb-24 lg:pt-5">
-        <div className="w-full flex justify-center items-center mb-20">
-          <img src="/images/logo.png" alt="simple-chat-logo" className="w-20" />
-          <h3 className="text-base ps-2">Simple Chat.</h3>
+      <div className="h-screen relative pt-6 px-2 pb-16 lg:grid lg:max-w-7xl lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:pb-20 lg:pt-5">
+        <div className="w-full flex justify-center items-center flex-col mb-20">
+          <div className="flex justify-center items-center">
+            <img src="/images/logo.png" alt="simple-chat-logo" className="w-20" />
+            <h3 className="text-base ps-2">Simple Chat.</h3>
+          </div>
+          <Button className="border-gray-800 border-2" variant="secondary" onClick={() => navigate('/config')}>
+            Konfigurasi Pesan Bot
+          </Button>
         </div>
 
         {/* room chat */}
         <ChatRoom />
 
         {/* message input */}
-        <div className="pt-5">
-          <div className="flex absolute bottom-3 w-full pr-4 md:px-3">
-            <Input value={messageValue} onChange={(e) => setMessageValue(e.target.value)} placeholder="Tulis pesan disini.." className="rounded-r-none" onKeyPress={(e) => sendMessage(e)} />
-            <Button className="rounded-l-none" size="icon" onClick={() => sendMessage({key: 'Click'})}>
-              <PaperPlaneIcon />
-            </Button>
-          </div>
+        <div className="flex absolute py-2 bg-white bottom-0 w-full pr-4 md:px-3">
+          <Input value={messageValue} onChange={(e) => setMessageValue(e.target.value)} placeholder="Tulis pesan disini.." className="rounded-r-none mb-2" onKeyPress={(e) => sendMessage(e)} />
+          <Button className="mb-2 rounded-l-none" size="icon" onClick={() => sendMessage({ key: 'Click' })}>
+            <PaperPlaneIcon />
+          </Button>
         </div>
       </div>
 
-      {/* <Dialog open={true}>
+      <Dialog open={dialogConfig}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Hello :)</DialogTitle>
-            <DialogDescription>
-              Untuk memulai chat, tolong tambah config dulu ya.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:justify-start">
-            <DialogClose>
+          <div>
+            <DialogHeader>
+              <DialogTitle>Hello :)</DialogTitle>
+              <DialogDescription>
+                Untuk memulai chat, tolong tambah config dulu ya.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-start mt-3">
               <Button type="button" onClick={redirectToConfig}>
                 Tambah Config
               </Button>
-            </DialogClose>
-          </DialogFooter>
+            </DialogFooter>
+          </div>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
     </>
   )
 }

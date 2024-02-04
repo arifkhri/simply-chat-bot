@@ -44,22 +44,23 @@ const useFormField = () => {
 
 const FormItemContext = React.createContext<{id?: string}>({})
 
-const FormItem = React.forwardRef(({ className, ...props }: BaseProps) => {
+const FormItem = React.forwardRef(({ className, ...props }: BaseProps, ref: React.Ref<HTMLDivElement>) => {
   const id = React.useId()
 
   return (
     (<FormItemContext.Provider value={{ id }}>
-      <div className={cn("space-y-2", className)} {...props} />
+      <div ref={ref} className={cn("space-y-2", className)} {...props} />
     </FormItemContext.Provider>)
   );
 })
 FormItem.displayName = "FormItem"
 
-const FormLabel = React.forwardRef(({ className, ...props }: BaseProps) => {
+const FormLabel = React.forwardRef(({ className, ...props }: BaseProps, ref: React.Ref<HTMLLabelElement>) => {
   const { error, formItemId } = useFormField()
 
   return (
     (<Label
+      ref={ref}
       className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
       {...props} />)
@@ -67,11 +68,12 @@ const FormLabel = React.forwardRef(({ className, ...props }: BaseProps) => {
 })
 FormLabel.displayName = "FormLabel"
 
-const FormControl = React.forwardRef(({ ...props }: BaseProps) => {
+const FormControl = React.forwardRef(({ ...props }: BaseProps, ref: React.Ref<HTMLElement>) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
     (<Slot
+      ref={ref}
       id={formItemId}
       aria-describedby={
         !error
@@ -84,11 +86,12 @@ const FormControl = React.forwardRef(({ ...props }: BaseProps) => {
 })
 FormControl.displayName = "FormControl"
 
-const FormDescription = React.forwardRef(({ className, ...props }:React.AllHTMLAttributes<any>) => {
+const FormDescription = React.forwardRef(({ className, ...props }:React.AllHTMLAttributes<any>, ref: React.Ref<HTMLParagraphElement>) => {
   const { formDescriptionId } = useFormField()
 
   return (
     (<p
+      ref={ref}
       id={formDescriptionId}
       className={cn("text-sm text-muted-foreground", className)}
       {...props} />)
@@ -100,7 +103,7 @@ interface FormMessageProps extends React.AllHTMLAttributes<any>{
   children?: JSX.Element;
 }
 
-const FormMessage = React.forwardRef(({ className, children, ...props }: FormMessageProps) => {
+const FormMessage = React.forwardRef(({ className, children, ...props }: FormMessageProps, ref: React.Ref<HTMLParagraphElement>) => {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message) : children
 
@@ -110,6 +113,7 @@ const FormMessage = React.forwardRef(({ className, children, ...props }: FormMes
 
   return (
     (<p
+      ref={ref}
       id={formMessageId}
       className={cn("text-sm font-medium text-destructive", className)}
       {...props}>

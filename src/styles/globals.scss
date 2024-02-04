@@ -58,3 +58,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.chat-room {
+  height: calc(100vh - 295px);
+
+  @apply px-3 overflow-auto;
+}

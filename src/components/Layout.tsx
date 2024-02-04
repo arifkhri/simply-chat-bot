@@ -1,7 +1,7 @@
 import { Catamaran } from "next/font/google";
 import { useEffect } from "react";
 
-import { botStore } from "@/lib/zustand/stores/botStore";
+import useLocalData from "@/hooks/useLocalData";
 
 const font = Catamaran({
   subsets: ["latin"],
@@ -10,18 +10,37 @@ const font = Catamaran({
 
 
 export default function RootLayout({ children }) {
-  const { messageData, set } = botStore();
+  const { store, dispatch } = useLocalData();
 
   useEffect(() => {
-    const cacheData = JSON.parse(window.localStorage.getItem('simple-chat') || '[]');
-    set(cacheData);
+    const cacheData = window.localStorage.getItem('simple-chat') ? JSON.parse(window.localStorage.getItem('simple-chat')) : { chatBotData: [] };
+
+    if (cacheData.chatBotData.length > 0) {
+      dispatch({
+        type: 'update',
+        name: 'configData',
+        value: {
+          ...cacheData
+        }
+      });
+    } else {
+      dispatch({
+        type: 'update',
+        name: 'showConfigModal',
+        value: true
+      });
+    }
   }, [])
 
   useEffect(() => {
-    if(messageData.length > 0) {
-      window.localStorage.setItem('simple-chat', JSON.stringify(messageData));
-    }
-  }, [messageData.length]);
+
+    window.localStorage.setItem('simple-chat', JSON.stringify(store.configData));
+    dispatch({
+      type: 'update',
+      name: 'showConfigModal',
+      value: false
+    });
+  }, [store.configData.chatBotData.length]);
 
   return (
     <main>

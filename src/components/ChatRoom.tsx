@@ -1,17 +1,18 @@
 import { PersonIcon } from "@radix-ui/react-icons";
+import { useEffect, useRef, useState } from "react";
 
-import { botStore } from "@/lib/zustand/stores/botStore";
-import { chatStore } from "@/lib/zustand/stores/chatStore";
+import useChatBot from "@/hooks/useChatBot";
+import useLocalData from "@/hooks/useLocalData";
 
 import { Avatar, AvatarImage } from "./ui/Avatar";
 
 const ChatRoom = () => {
-  const { messageData } = chatStore();
-  console.log('🚀 ~ messageData:', messageData);
-  const { messageData: botData } = botStore();
-  console.log('🚀 ~ botData:', botData);
+  const ref = useRef();
+  const { store: { conversationData }, dispatch } = useLocalData();
+  const { getReplyData } = useChatBot();
+  const [prevTotalData, setPrevTotalData] = useState(conversationData.length);
   const type = {
-    you: {
+    user: {
       avatar: (
         <Avatar className="text-white bg-black">
           <PersonIcon />
@@ -19,53 +20,52 @@ const ChatRoom = () => {
       ),
       label: 'You'
     },
-    'simple-chat': {
+    bot: {
       avatar: (
         <Avatar>
           <AvatarImage src="/images/logo.png" />
         </Avatar>
       ),
-      label: 'Simple Chat'
+      label: 'Bot Simple Chat'
     }
   };
 
-  // useEffect(() => {
+  useEffect(() => {
+    const newConversation = conversationData;
+    if (conversationData.length > 0 && prevTotalData !== conversationData.length) {
+      const interval = setInterval(() => {
 
-  //   setTimeout(() => {
-  //     if(messageData.length > 0) {
-  //       let replyMessage = '';
-  //       const userMessage = messageData.pop();
+        const replyData = getReplyData(conversationData);
+        newConversation.push(replyData);
 
-  //       botData.forEach((record) => {
-  //         let criteriaIsMatch = record.criteria.includes(userMessage.message);
-  //         if(criteriaIsMatch) {
-  //           replyMessage = record.message;
+        dispatch({
+          type: 'update',
+          name: 'conversationData',
+          value: newConversation
+        });
 
-  //         } else {
-  //           replyMessage = "Ketik 'Agent' untuk menghubungi agent kami";
-  //         }
-  //       });
 
-  //       const getReplyData = {
-  //         type: 'simple-chat',
-  //         message: replyMessage
-  //       };
-  //       setChatData(getReplyData);
-  //     }
-  //   }, 500);
+        let chatRoomEl = document.querySelector('.chat-room');
 
-  // }, [messageData.length]);
+        chatRoomEl.scrollTop = chatRoomEl.scrollHeight;
+        setPrevTotalData(conversationData.length);
+
+        clearInterval(interval);
+      }, 500);
+    }
+
+  }, [conversationData.length]);
 
   return (
-    <div>
+    <div className="chat-room" ref={ref}>
       {
-        messageData.map((record, index) => (
+        conversationData.map((record, index) => (
           <div className="flex flex-col mt-3" key={`${record.type}-${index}`}>
             <div className="flex items-center">
-              { type[record.type].avatar }
-              <span className="ml-2">{ type[record.type].label }</span>
+              {type[record.type].avatar}
+              <span className="ml-2">{type[record.type].label}</span>
             </div>
-            <p className="pl-[37px]">
+            <p className="pl-[37px] whitespace-pre">
               {record.message}
             </p>
           </div>

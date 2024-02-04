@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 
-import { botStore } from "@/lib/zustand/stores/botStore"
+import useLocalData from "@/hooks/useLocalData"
 
 import Criteria from "./Criteria"
 import { IConfigForm } from "../../global"
@@ -25,7 +25,7 @@ import { IConfigForm } from "../../global"
 const formSchema = z.object({
   message: z.string().min(1, "Field wajib diisi"),
   criteriaInput: z.string(),
-  criteria: z.array(z.string()),
+  criteria: z.array(z.string()).min(1, "Masukan minimal 1 kriteria"),
 });
 
 interface ConfigFormProps {
@@ -35,7 +35,7 @@ interface ConfigFormProps {
 }
 
 const ConfigForm = ({ afterSubmit, defaultValues, index }: ConfigFormProps) => {
-  const { add } = botStore();
+  const { store, dispatch } = useLocalData();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -51,6 +51,7 @@ const ConfigForm = ({ afterSubmit, defaultValues, index }: ConfigFormProps) => {
     if (e.key === 'Enter') {
       const value = e.target.value;
       form.setValue('criteria', [...criteria, value]);
+      form.trigger('criteria');
       form.setValue('criteriaInput', '');
       e.preventDefault();
     }
@@ -60,14 +61,34 @@ const ConfigForm = ({ afterSubmit, defaultValues, index }: ConfigFormProps) => {
     let newCriteria = [...criteria];
     newCriteria.splice(index, 1);
     form.setValue('criteria', newCriteria);
+    form.trigger('criteria');
   }
 
   async function onSubmit(formValues) {
-    // if(index) {
+    const { message, criteria } = formValues;
+    const chatBotData = store.configData.chatBotData
 
-    // }
-    console.log('🚀 ~ formValues:', formValues);
-    add(formValues);
+    if(index !== undefined) {
+      chatBotData[index] = {
+        message,
+        criteria,
+      };
+
+    } else {
+      chatBotData.push({
+        message,
+        criteria,
+      });
+    }
+
+    dispatch({
+      type: 'update',
+      name: 'configData',
+      value: {
+        ...store.configData,
+        chatBotData
+      }
+    });
     afterSubmit();
   }
 
@@ -89,8 +110,6 @@ const ConfigForm = ({ afterSubmit, defaultValues, index }: ConfigFormProps) => {
             )}
           />
 
-
-
           <div>
             <FormField
               control={form.control}
@@ -99,11 +118,24 @@ const ConfigForm = ({ afterSubmit, defaultValues, index }: ConfigFormProps) => {
                 <FormItem>
                   <FormLabel className="text-black">
                     <span className="mr-1">Keyword untuk pesan*</span> <br />
-                      <span className="font-light text-xs text-gray-500">Masukan minimal 1 kriteria</span>
+                    <span className="font-light text-xs text-gray-500">Masukan minimal 1 kriteria</span>
                   </FormLabel>
                   <FormControl>
                     <Input {...field} type="text" placeholder="Tekan enter untuk menyimpan keyword" onKeyPress={onKeyPressCriteria} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="criteria"
+              render={() => (
+                <FormItem>
+                  {/* <FormControl>
+                    <Input {...field} type="text" className="hidden" />
+                  </FormControl> */}
                   <FormMessage />
                 </FormItem>
               )}

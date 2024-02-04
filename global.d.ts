@@ -1,10 +1,10 @@
 export interface ILocalDataContext {
   store: {
+    showConfigModal: boolean;
     configData: {
-      form: IConfigForm;
       chatBotData: IMessageData[];
     },
-    conversationData: IConversationData
+    conversationData: IConversationData[];
   };
   dispatch: any;
 }
@@ -13,8 +13,8 @@ export interface IConfigForm extends IMessageData {
   criteriaInput: string;
 }
 
-export interface IConversationData extends IMessageData<Pick['message']> {
-  type: 'user' | 'bot'
+export interface IConversationData extends Pick<IMessageData, 'message'> {
+  type: 'user' | 'bot';
 };
 
 export interface IMessageData {

@@ -16,12 +16,12 @@ import {
 } from "@/components/ui/Dialog";
 
 import { siteConfig } from "@/constant/config";
-import { botStore } from '@/lib/zustand/stores/botStore';
+import useLocalData from '@/hooks/useLocalData';
 
-import { IModal } from '../../../global';
+import { IModal } from '../../global';
 
 const ConfigPage = () => {
-  const { messageData, set: setChatData } = botStore();
+  const { store: { configData }, dispatch } = useLocalData();
   const [modal, setModal] = useState<IModal>(null);
 
   const { push: navigate } = useRouter();
@@ -30,7 +30,7 @@ const ConfigPage = () => {
     navigate('/');
   }
 
-  const showFormModal = (record?) => {
+  const showFormModal = (record?, index?) => {
     let modalData = {
       title: 'Tambah Pesan Bot',
       open: true,
@@ -40,10 +40,12 @@ const ConfigPage = () => {
     };
 
     if (record) {
+      record.criteriaInput = '';
+
       modalData = {
         title: 'Ubah Pesan Bot',
         open: true,
-        content: <ConfigForm defaultValues={record} afterSubmit={() => {
+        content: <ConfigForm index={index} defaultValues={record} afterSubmit={() => {
           setModal({ open: false })
         }} />
       }
@@ -57,14 +59,22 @@ const ConfigPage = () => {
       open: true,
       content: <Schema onOk={() => {
         setModal({ open: false })
-      }} data={messageData} />
+      }} data={configData.chatBotData} />
     })
   }
 
   const deleteChat = (index) => {
-    const newData = [...messageData];
+    const newData = [...configData.chatBotData];
     newData.splice(index, 1);
-    setChatData(newData);
+
+    dispatch({
+      type: 'update',
+      name: 'configData',
+      value: {
+        ...configData,
+        chatBotData: newData
+      }
+    });
   }
 
   return (
@@ -82,9 +92,13 @@ const ConfigPage = () => {
             <h3 className="text-2xl font-medium">Konfigurasi Pesan Bot</h3>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" className="border-gray-800 border-2" onClick={() => showSchemaModal()}>
-              Skema Pesan
-            </Button>
+            {
+              configData.chatBotData.length > 0 && (
+                <Button variant="secondary" className="border-gray-800 border-2" onClick={() => showSchemaModal()}>
+                  Skema Pesan
+                </Button>
+              )
+            }
             <Button onClick={() => showFormModal()}>
               Tambah
             </Button>
@@ -94,13 +108,13 @@ const ConfigPage = () => {
         {/* content */}
         <div className="pt-5">
           {
-            messageData.length > 0 ? (
+            configData.chatBotData.length > 0 ? (
               <div className="flex flex-col justify-center">
                 {
-                  messageData.map((data, index) => (
+                  configData.chatBotData.map((data, index) => (
                     <div key={index} className="flex-col border mb-5 hover:bg-slate-50 rounded p-3">
                       <div className="flex justify-end">
-                        <Button className="mx-2 w-6 h-6" variant="secondary" size="icon" onClick={() => showFormModal(data)}>
+                        <Button className="mx-2 w-6 h-6" variant="secondary" size="icon" onClick={() => showFormModal(data, index)}>
                           <Pencil1Icon />
                         </Button>
                         <Button onClick={() => deleteChat(index)} size="icon" variant="secondary" className="w-6 h-6">
@@ -141,7 +155,7 @@ const ConfigPage = () => {
             )
           }
         </div>
-        
+
         <Dialog open={modal?.open}>
           <DialogContent className="w-full md:max-w-2lg">
             <DialogHeader>

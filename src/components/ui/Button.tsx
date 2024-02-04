@@ -40,10 +40,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<any> {
 }
 
 
-const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }: ButtonProps) => {
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }: ButtonProps, ref: React.Ref<any>) => {
   const Comp = asChild ? Slot : "button"
   return (
     (<Comp
+      ref={ref}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props} />)
   );
